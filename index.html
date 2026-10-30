@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Working English 1 期中文法全真特訓系統</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .blank-box {
+            display: inline-block;
+            padding: 2px 10px;
+            margin: 0 4px;
+            background-color: #f3e8ff;
+            color: #6b21a8;
+            border-bottom: 2px solid #9333ea;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+        .blank-answered {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border-bottom-color: #2563eb;
+        }
+        .blank-correct {
+            background-color: #dcfce7;
+            color: #166534;
+            border-bottom-color: #16a34a;
+        }
+        .blank-incorrect {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-bottom-color: #dc2626;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-700 p-2.5 rounded-xl shadow-inner text-amber-400">
+                    <i class="fa-solid fa-book-bookmark text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight">Working English 1 文法特訓</h1>
+                    <p class="text-xs text-indigo-200">100% 擬真老師文法練習單 (現在簡單式 31 題 + 未來式 21 題)</p>
+                </div>
+            </div>
+
+            <!-- Score Badge & Controls -->
+            <div class="flex items-center gap-3">
+                <div id="global-stats" class="bg-indigo-800/90 border border-indigo-700/80 rounded-xl px-4 py-2 text-xs sm:text-sm flex items-center gap-4 shadow-sm">
+                    <div>
+                        <span class="text-indigo-300 text-[10px] block font-medium">已完成題目</span>
+                        <span id="stat-answered" class="font-extrabold text-white">0 / 52</span>
+                    </div>
+                    <div class="h-8 w-px bg-indigo-700/80"></div>
+                    <div>
+                        <span class="text-indigo-300 text-[10px] block font-medium">答對率</span>
+                        <span id="stat-accuracy" class="font-extrabold text-amber-300">0%</span>
+                    </div>
+                </div>
+
+                <button onclick="resetQuiz()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-right"></i> 重置測驗
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-[72px] z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-2 py-2.5 scrollbar-none">
+            <button onclick="switchTab('unit1')" id="tab-unit1" class="tab-btn active px-4 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-all bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm">
+                <i class="fa-solid fa-clock"></i> Unit 1: 現在簡單式 (Present Simple - 31 題)
+            </button>
+            <button onclick="switchTab('unit2')" id="tab-unit2" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-all text-slate-600 hover:bg-slate-100">
+                <i class="fa-solid fa-rocket"></i> Unit 2: 未來式 (will vs. be going to - 21 題)
+            </button>
+            <button onclick="switchTab('wrong')" id="tab-wrong" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-all text-slate-600 hover:bg-slate-100">
+                <i class="fa-solid fa-triangle-exclamation text-rose-500"></i> 錯題專區 <span id="wrong-count-badge" class="bg-rose-100 text-rose-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+            </button>
+            <button onclick="switchTab('all')" id="tab-all" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-all text-slate-600 hover:bg-slate-100">
+                <i class="fa-solid fa-layer-group text-amber-500"></i> 全真綜合考場 (52 題全載)
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+        <!-- Banner Info -->
+        <div class="mb-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-md relative overflow-hidden border border-indigo-900/50">
+            <div class="relative z-10">
+                <div class="inline-flex items-center gap-2 bg-indigo-500/30 border border-indigo-400/40 px-3 py-1 rounded-full text-xs font-semibold text-indigo-200 mb-3">
+                    <i class="fa-solid fa-lightbulb text-amber-300"></i> 考前文法重點提示
+                </div>
+                <h2 id="unit-banner-title" class="text-2xl font-bold mb-2">Unit 1: Present Simple Tense (現在簡單式)</h2>
+                <p id="unit-banner-desc" class="text-indigo-200 text-sm max-w-3xl leading-relaxed">
+                    完全涵蓋老師發放之 Present Simple 31 個練習格子！重點：第三人稱單數動詞加 -s/-es (brushes, goes, swims)、疑問句助動詞 Do/Does、否定句助動詞 don't/doesn't。
+                </p>
+            </div>
+            <i class="fa-solid fa-spell-check text-9xl text-white/5 absolute -right-6 -bottom-6 pointer-events-none"></i>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="space-y-6">
+            <!-- Dynamic Questions Render Here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 py-6 text-center text-xs mt-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="mb-1 font-semibold">Working English 1 Midterm Grammar Review System</p>
+            <p class="text-slate-500">題目源自 Present Simple Board Game & Future Forms (Will vs. Be going to) 官方解答單</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Code -->
+    <script>
+        // Database of Questions
+        const grammarData = {
+            unit1: {
+                title: "Unit 1: Present Simple Tense (現在簡單式)",
+                description: "完全涵蓋老師發放之 Present Simple 31 個練習格子！重點考驗：第三人稱單數動詞加 -s/-es (brushes, goes, cooks)、疑問句開頭助動詞 Do/Does、否定句 don't/doesn't。",
+                questions: [
+                    {
+                        id: "u1_q1",
+                        squareNum: "Square 1",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q1\">______</span> he play football every Sunday?",
+                        options: ["(A) Do", "(B) Does", "(C) Is"],
+                        answer: 1,
+                        explanation: "【第三人稱單數疑問句】主詞為 he（第三人稱單數），疑問句須用助動詞 <b>Does</b>。"
+                    },
+                    {
+                        id: "u1_q2",
+                        squareNum: "Square 2",
+                        text: "We <span class=\"blank-box\" id=\"blank-u1_q2\">______</span> fruit. (not / like)",
+                        options: ["(A) don't like", "(B) doesn't like", "(C) aren't like"],
+                        answer: 0,
+                        explanation: "【現在簡單式否定句】主詞 We 為第一人稱複數，搭配助動詞 <b>don't + 原型動詞 like</b>。"
+                    },
+                    {
+                        id: "u1_q3",
+                        squareNum: "Square 3",
+                        text: "They <span class=\"blank-box\" id=\"blank-u1_q3\">______</span> at 7 o'clock. (get up)",
+                        options: ["(A) gets up", "(B) get up", "(C) getting up"],
+                        answer: 1,
+                        explanation: "【複數主詞肯定句】主詞 They 為複數，動詞使用原型 <b>get up</b>。"
+                    },
+                    {
+                        id: "u1_q4",
+                        squareNum: "Square 4",
+                        text: "Josh <span class=\"blank-box\" id=\"blank-u1_q4\">______</span> his teeth every day. (brush)",
+                        options: ["(A) brush", "(B) brushes", "(C) is brushing"],
+                        answer: 1,
+                        explanation: "【動詞字尾加 es】主詞 Josh 為第三人稱單數，動詞以 -sh 結尾須加 -es 變為 <b>brushes</b>。"
+                    },
+                    {
+                        id: "u1_q5",
+                        squareNum: "Square 5",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q5\">______</span> you like fish and chips?",
+                        options: ["(A) Do", "(B) Does", "(C) Are"],
+                        answer: 0,
+                        explanation: "【第二人稱疑問句】主詞 you 為第二人稱，一般動詞疑問句開頭使用 <b>Do</b>。"
+                    },
+                    {
+                        id: "u1_q7",
+                        squareNum: "Square 7",
+                        text: "Stella <span class=\"blank-box\" id=\"blank-u1_q7\">______</span> TV. (not / watch)",
+                        options: ["(A) don't watch", "(B) doesn't watch", "(C) isn't watch"],
+                        answer: 1,
+                        explanation: "【單數主詞否定句】主詞 Stella 為單數，否定句使用 <b>doesn't + 原型動詞 watch</b>。"
+                    },
+                    {
+                        id: "u1_q8",
+                        squareNum: "Square 8",
+                        text: "They <span class=\"blank-box\" id=\"blank-u1_q8\">______</span> jackets in summer. (not / wear)",
+                        options: ["(A) don't wear", "(B) doesn't wear", "(C) aren't wear"],
+                        answer: 0,
+                        explanation: "【複數主詞否定句】主詞 They 否定句使用 <b>don't wear</b>。"
+                    },
+                    {
+                        id: "u1_q9",
+                        squareNum: "Square 9",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q9\">______</span> Elena paint her bedroom every year?",
+                        options: ["(A) Do", "(B) Does", "(C) Is"],
+                        answer: 1,
+                        explanation: "【單數名詞疑問句】主詞 Elena 為單數人名，疑問句開頭用 <b>Does</b>。"
+                    },
+                    {
+                        id: "u1_q10",
+                        squareNum: "Square 10",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q10\">______</span> we climb trees in autumn?",
+                        options: ["(A) Do", "(B) Does", "(C) Are"],
+                        answer: 0,
+                        explanation: "【複數主詞疑問句】主詞 we 為第一人稱複數，疑問句用 <b>Do</b>。"
+                    },
+                    {
+                        id: "u1_q11",
+                        squareNum: "Square 11",
+                        text: "Dad <span class=\"blank-box\" id=\"blank-u1_q11\">______</span> to the shops on Mondays. (go)",
+                        options: ["(A) go", "(B) goes", "(C) is going"],
+                        answer: 1,
+                        explanation: "【動詞字尾加 es】主詞 Dad 為第三人稱單數，動詞 go 以字母 o 結尾加 -es 變為 <b>goes</b>。"
+                    },
+                    {
+                        id: "u1_q12",
+                        squareNum: "Square 12",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q12\">______</span> in the kitchen! (not / run)",
+                        options: ["(A) Don't run", "(B) Doesn't run", "(C) Not run"],
+                        answer: 0,
+                        explanation: "【祈使句否定】否定祈使句固定以 <b>Don't + 原型動詞 run</b> 開頭。"
+                    },
+                    {
+                        id: "u1_q13",
+                        squareNum: "Square 13",
+                        text: "We <span class=\"blank-box\" id=\"blank-u1_q13\">______</span> milk every morning. (drink)",
+                        options: ["(A) drinks", "(B) drink", "(C) are drinking"],
+                        answer: 1,
+                        explanation: "【習慣動作】主詞 We 搭配原型動詞 <b>drink</b>。"
+                    },
+                    {
+                        id: "u1_q14",
+                        squareNum: "Square 14",
+                        text: "He <span class=\"blank-box\" id=\"blank-u1_q14\">______</span> breakfast at 9.00. (eat)",
+                        options: ["(A) eat", "(B) eats", "(C) is eating"],
+                        answer: 1,
+                        explanation: "【第三人稱單數】主詞 He 搭配單數動詞 <b>eats</b>。"
+                    },
+                    {
+                        id: "u1_q15",
+                        squareNum: "Square 15",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q15\">______</span> the cat sleep every night?",
+                        options: ["(A) Do", "(B) Does", "(C) Is"],
+                        answer: 1,
+                        explanation: "【單數動物疑問句】主詞 the cat 為第三人稱單數，疑問句用 <b>Does</b>。"
+                    },
+                    {
+                        id: "u1_q16",
+                        squareNum: "Square 16",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q16\">______</span> you jump on the bed?",
+                        options: ["(A) Do", "(B) Does", "(C) Are"],
+                        answer: 0,
+                        explanation: "【疑問句】主詞 you 搭配助動詞 <b>Do</b>。"
+                    },
+                    {
+                        id: "u1_q18",
+                        squareNum: "Square 18",
+                        text: "Ben <span class=\"blank-box\" id=\"blank-u1_q18\">______</span> volleyball. (not / play)",
+                        options: ["(A) don't play", "(B) doesn't play", "(C) isn't play"],
+                        answer: 1,
+                        explanation: "【單數否定句】主詞 Ben 否定句使用 <b>doesn't play</b>。"
+                    },
+                    {
+                        id: "u1_q19",
+                        squareNum: "Square 19",
+                        text: "The children <span class=\"blank-box\" id=\"blank-u1_q19\">______</span> sweets. (not / like)",
+                        options: ["(A) don't like", "(B) doesn't like", "(C) aren't like"],
+                        answer: 0,
+                        explanation: "【複數名詞否定句】主詞 The children 為複數名詞，否定句用 <b>don't like</b>。"
+                    },
+                    {
+                        id: "u1_q20",
+                        squareNum: "Square 20",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q20\">______</span> they draw at the weekend?",
+                        options: ["(A) Do", "(B) Does", "(C) Are"],
+                        answer: 0,
+                        explanation: "【複數疑問句】主詞 they 搭配助動詞 <b>Do</b>。"
+                    },
+                    {
+                        id: "u1_q21",
+                        squareNum: "Square 21",
+                        text: "Mandy <span class=\"blank-box\" id=\"blank-u1_q21\">______</span> pizza every Saturday. (cook)",
+                        options: ["(A) cook", "(B) cooks", "(C) is cooking"],
+                        answer: 1,
+                        explanation: "【單數動詞變化】主詞 Mandy 為單數，動詞加 -s 變為 <b>cooks</b>。"
+                    },
+                    {
+                        id: "u1_q22",
+                        squareNum: "Square 22",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q22\">______</span> he dance at parties?",
+                        options: ["(A) Do", "(B) Does", "(C) Is"],
+                        answer: 1,
+                        explanation: "【單數疑問句】主詞 he 搭配助動詞 <b>Does</b>。"
+                    },
+                    {
+                        id: "u1_q24",
+                        squareNum: "Square 24",
+                        text: "Mum and dad <span class=\"blank-box\" id=\"blank-u1_q24\">______</span> to school. (not / go)",
+                        options: ["(A) don't go", "(B) doesn't go", "(C) aren't go"],
+                        answer: 0,
+                        explanation: "【複數主詞】Mum and dad 為兩個人（複數），否定句用 <b>don't go</b>。"
+                    },
+                    {
+                        id: "u1_q25",
+                        squareNum: "Square 25",
+                        text: "You <span class=\"blank-box\" id=\"blank-u1_q25\">______</span> jeans every day. (wear)",
+                        options: ["(A) wear", "(B) wears", "(C) wearing"],
+                        answer: 0,
+                        explanation: "【第二人稱】主詞 You 搭配原型動詞 <b>wear</b>。"
+                    },
+                    {
+                        id: "u1_q26",
+                        squareNum: "Square 26",
+                        text: "A cow <span class=\"blank-box\" id=\"blank-u1_q26\">______</span> in the field. (not / sing)",
+                        options: ["(A) don't sing", "(B) doesn't sing", "(C) isn't sing"],
+                        answer: 1,
+                        explanation: "【單數否定句】主詞 A cow 為單數名詞，否定句使用 <b>doesn't sing</b>。"
+                    },
+                    {
+                        id: "u1_q27",
+                        squareNum: "Square 27",
+                        text: "She <span class=\"blank-box\" id=\"blank-u1_q27\">______</span> to bed at 10.00. (go)",
+                        options: ["(A) go", "(B) goes", "(C) is going"],
+                        answer: 1,
+                        explanation: "【第三人稱單數】主詞 She 搭配動詞單數型態 <b>goes</b>。"
+                    },
+                    {
+                        id: "u1_q28",
+                        squareNum: "Square 28",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q28\">______</span> I play tennis on Fridays?",
+                        options: ["(A) Do", "(B) Does", "(C) Am"],
+                        answer: 0,
+                        explanation: "【第一人稱疑問句】主詞 I 搭配助動詞 <b>Do</b>。"
+                    },
+                    {
+                        id: "u1_q29",
+                        squareNum: "Square 29",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q29\">______</span> Anna read books at the weekend?",
+                        options: ["(A) Do", "(B) Does", "(C) Is"],
+                        answer: 1,
+                        explanation: "【單數疑問句】主詞 Anna 為單數人名，疑問句用 <b>Does</b>。"
+                    },
+                    {
+                        id: "u1_q31",
+                        squareNum: "Square 31",
+                        text: "The dolphin <span class=\"blank-box\" id=\"blank-u1_q31\">______</span> in the sea. (swim)",
+                        options: ["(A) swim", "(B) swims", "(C) swimming"],
+                        answer: 1,
+                        explanation: "【單數動詞】主詞 The dolphin 為單數，動詞加 -s 變為 <b>swims</b>。"
+                    },
+                    {
+                        id: "u1_q32",
+                        squareNum: "Square 32",
+                        text: "I <span class=\"blank-box\" id=\"blank-u1_q32\">______</span> cherries. (like)",
+                        options: ["(A) like", "(B) likes", "(C) am liking"],
+                        answer: 0,
+                        explanation: "【第一人稱】主詞 I 搭配原型動詞 <b>like</b>。"
+                    },
+                    {
+                        id: "u1_q33",
+                        squareNum: "Square 33",
+                        text: "You <span class=\"blank-box\" id=\"blank-u1_q33\">______</span> lemonade. (not / drink)",
+                        options: ["(A) don't drink", "(B) doesn't drink", "(C) aren't drink"],
+                        answer: 0,
+                        explanation: "【第二人稱否定句】主詞 You 否定句使用 <b>don't drink</b>。"
+                    },
+                    {
+                        id: "u1_q36",
+                        squareNum: "Square 36",
+                        text: "<span class=\"blank-box\" id=\"blank-u1_q36\">______</span> Peter write stories?",
+                        options: ["(A) Do", "(B) Does", "(C) Is"],
+                        answer: 1,
+                        explanation: "【單數疑問句】主詞 Peter 搭配助動詞 <b>Does</b>。"
+                    },
+                    {
+                        id: "u1_q37",
+                        squareNum: "Square 37",
+                        text: "A dog <span class=\"blank-box\" id=\"blank-u1_q37\">______</span> the guitar. (not / play)",
+                        options: ["(A) don't play", "(B) doesn't play", "(C) isn't play"],
+                        answer: 1,
+                        explanation: "【單數否定句】主詞 A dog 為單數，否定句使用 <b>doesn't play</b>。"
+                    }
+                ]
+            },
+            unit2: {
+                title: "Unit 2: Future Forms (Will vs. Be going to)",
+                description: "完整涵蓋老師解答單 Future Forms 全部 21 題！解析規則：預先計畫與眼前的跡象用 be going to；承諾、請求、主動幫忙與帶有 I think / probably / perhaps / I'm afraid 的預測用 will。",
+                questions: [
+                    {
+                        id: "u2_q1",
+                        squareNum: "Square 1",
+                        text: "Mum has bought eggs, flour and fruit. She <span class=\"blank-box\" id=\"blank-u2_q1\">______</span> a cake.",
+                        options: ["(A) is going to bake", "(B) will bake", "(C) bakes"],
+                        answer: 0,
+                        explanation: "【官方規則：Plan (預先計畫)】媽媽已經買好了材料（現有證據/預先準備），表示早已決定好的計畫，用 <b>is going to bake</b>。"
+                    },
+                    {
+                        id: "u2_q2",
+                        squareNum: "Square 2",
+                        text: "<span class=\"blank-box\" id=\"blank-u2_q2\">______</span> Jessie be back soon? I need to talk to her.",
+                        options: ["(A) Will", "(B) Is going to", "(C) Does"],
+                        answer: 0,
+                        explanation: "【官方規則：Question about a prediction (預測疑問句)】詢問對未來的推測，開頭用 <b>Will</b>。"
+                    },
+                    {
+                        id: "u2_q3",
+                        squareNum: "Square 3",
+                        text: "Next year my sister <span class=\"blank-box\" id=\"blank-u2_q3\">______</span> learn how to drive a car.",
+                        options: ["(A) is going to", "(B) will", "(C) is"],
+                        answer: 0,
+                        explanation: "【官方規則：Future plan (未來計畫)】明年學開車是早已打算好的計畫，使用 <b>is going to</b>。"
+                    },
+                    {
+                        id: "u2_q4",
+                        squareNum: "Square 4",
+                        text: "I hope I <span class=\"blank-box\" id=\"blank-u2_q4\">______</span> be happy when I grow up.",
+                        options: ["(A) will", "(B) am going to", "(C) am"],
+                        answer: 0,
+                        explanation: "【官方規則：Prediction / hope (希望與期望)】包含 <b>I hope</b> 的個人未來願望與推測，固定搭配 <b>will</b>。"
+                    },
+                    {
+                        id: "u2_q6",
+                        squareNum: "Square 6",
+                        text: "We <span class=\"blank-box\" id=\"blank-u2_q6\">______</span> meet our cousins tonight.",
+                        options: ["(A) are going to", "(B) will", "(C) meet"],
+                        answer: 0,
+                        explanation: "【官方規則：Future plan - already arranged (已排定計畫)】今晚與表親相聚為預先安排好的行程，用 <b>are going to</b>。"
+                    },
+                    {
+                        id: "u2_q7",
+                        squareNum: "Square 7",
+                        text: "I <span class=\"blank-box\" id=\"blank-u2_q7\">______</span> eat more sweets before dinner. I promise.",
+                        options: ["(A) won't", "(B) am not going to", "(C) don't"],
+                        answer: 0,
+                        explanation: "【官方規則：Promise (承諾/許諾)】句尾有 <b>I promise</b>（我發誓/我承諾），表示承諾須使用 <b>won't</b> (will not)。"
+                    },
+                    {
+                        id: "u2_q8",
+                        squareNum: "Square 8",
+                        text: "I <span class=\"blank-box\" id=\"blank-u2_q8\">______</span> spend the money I've been saving for the last five months on a new laptop.",
+                        options: ["(A) am going to", "(B) will", "(C) spend"],
+                        answer: 0,
+                        explanation: "【官方規則：Intention (既定意圖)】存錢五個月後決定買筆電，代表說話之前就有的意圖，用 <b>am going to</b>。"
+                    },
+                    {
+                        id: "u2_q10",
+                        squareNum: "Square 10",
+                        text: "I <span class=\"blank-box\" id=\"blank-u2_q10\">______</span> call Liz as soon as I'm back.",
+                        options: ["(A) will", "(B) am going to", "(C) call"],
+                        answer: 0,
+                        explanation: "【官方規則：Promise (承諾/當下決定)】回來後會打給 Liz，屬於口頭承諾，用 <b>will</b>。"
+                    },
+                    {
+                        id: "u2_q11",
+                        squareNum: "Square 11",
+                        text: "Diana <span class=\"blank-box\" id=\"blank-u2_q11\">______</span> wash her hair this afternoon.",
+                        options: ["(A) is going to", "(B) will", "(C) washes"],
+                        answer: 0,
+                        explanation: "【官方規則：Future plan (未來計畫)】今天下午洗頭為預先安排的日常計畫，用 <b>is going to</b>。"
+                    },
+                    {
+                        id: "u2_q12",
+                        squareNum: "Square 12",
+                        text: "<span class=\"blank-box\" id=\"blank-u2_q12\">______</span> you lend me a biro? I've got nothing to write with.",
+                        options: ["(A) Will", "(B) Are you going to", "(C) Do"],
+                        answer: 0,
+                        explanation: "【官方規則：Request made at the moment of speaking (當下請求)】因沒筆而當場提出借筆請求，用 <b>Will you...</b>。"
+                    },
+                    {
+                        id: "u2_q13",
+                        squareNum: "Square 13",
+                        text: "There are no clouds in the sky. It <span class=\"blank-box\" id=\"blank-u2_q13\">______</span> be a beautiful day.",
+                        options: ["(A) is going to", "(B) will", "(C) is"],
+                        answer: 0,
+                        explanation: "【官方規則：Prediction based on present evidence (眼前跡象)】天空萬里無雲是眼前的證據，預測會是好天氣用 <b>is going to</b>。"
+                    },
+                    {
+                        id: "u2_q14",
+                        squareNum: "Square 14",
+                        text: "I think people <span class=\"blank-box\" id=\"blank-u2_q14\">______</span> speak one language someday.",
+                        options: ["(A) will", "(B) are going to", "(C) do"],
+                        answer: 0,
+                        explanation: "【官方規則：Prediction / opinion with 'I think' (觀點推測)】包含 <b>I think</b> 的個人看法與遠期預測，搭配 <b>will</b>。"
+                    },
+                    {
+                        id: "u2_q15",
+                        squareNum: "Square 15",
+                        text: "Steve is tired. He <span class=\"blank-box\" id=\"blank-u2_q15\">______</span> take a short nap.",
+                        options: ["(A) is going to", "(B) will", "(C) takes"],
+                        answer: 0,
+                        explanation: "【官方規則：Intention based on present evidence (現況意圖)】Steve 很累（眼前狀況），所以意圖小憩，用 <b>is going to</b>。"
+                    },
+                    {
+                        id: "u2_q16",
+                        squareNum: "Square 16",
+                        text: "Don't worry mum. I <span class=\"blank-box\" id=\"blank-u2_q16\">______</span> pick Tommy up from school today.",
+                        options: ["(A) will", "(B) am going to", "(C) do"],
+                        answer: 0,
+                        explanation: "【官方規則：Offer / on-the-spot decision (主動提供協助/當場決定)】安慰媽媽並主動要幫忙接孩子，用 <b>will</b>。"
+                    },
+                    {
+                        id: "u2_q18",
+                        squareNum: "Square 18",
+                        text: "Look! Pam <span class=\"blank-box\" id=\"blank-u2_q18\">______</span> jump into the swimming pool.",
+                        options: ["(A) is going to", "(B) will", "(C) jumps"],
+                        answer: 0,
+                        explanation: "【官方規則：Prediction based on present evidence (Look!)】看到 <b>Look!</b> 表示眼前正在發生的跡象，預測即將跳水用 <b>is going to</b>。"
+                    },
+                    {
+                        id: "u2_q19",
+                        squareNum: "Square 19",
+                        text: "We <span class=\"blank-box\" id=\"blank-u2_q19\">______</span> probably go mountaineering next summer.",
+                        options: ["(A) will", "(B) are going to", "(C) have"],
+                        answer: 0,
+                        explanation: "【官方規則：Prediction with 'probably' (可能)】句子含有副詞 <b>probably</b>，預測不確定事件搭配 <b>will</b>。"
+                    },
+                    {
+                        id: "u2_q20",
+                        squareNum: "Square 20",
+                        text: "Your T-shirt has a stain. <span class=\"blank-box\" id=\"blank-u2_q20\">______</span> wash it?",
+                        options: ["(A) Are you going to", "(B) Will you", "(C) Do you"],
+                        answer: 0,
+                        explanation: "【官方規則：Asking about a plan / intention (詢問打算)】看到汙漬後詢問對方是否有打算清洗，用 <b>Are you going to (wash it)?</b>"
+                    },
+                    {
+                        id: "u2_q22",
+                        squareNum: "Square 22",
+                        text: "I <span class=\"blank-box\" id=\"blank-u2_q22\">______</span> help you with your IT project.",
+                        options: ["(A) will", "(B) am going to", "(C) help"],
+                        answer: 0,
+                        explanation: "【官方規則：Offer (主動提供幫忙)】主動表達要協助對方完成專案，使用 <b>will</b>。"
+                    },
+                    {
+                        id: "u2_q23",
+                        squareNum: "Square 23",
+                        text: "I'm afraid Helen <span class=\"blank-box\" id=\"blank-u2_q23\">______</span> pass her final exam because she didn't study hard enough.",
+                        options: ["(A) won't", "(B) isn't going to", "(C) doesn't"],
+                        answer: 0,
+                        explanation: "【官方規則：Prediction with 'I'm afraid' (擔憂預測)】帶有 <b>I'm afraid</b>（恐怕…）的推測，使用否定詞 <b>won't</b>。"
+                    },
+                    {
+                        id: "u2_q24",
+                        squareNum: "Square 24",
+                        text: "George <span class=\"blank-box\" id=\"blank-u2_q24\">______</span> probably go to the concert.",
+                        options: ["(A) will", "(B) is going to", "(C) does"],
+                        answer: 0,
+                        explanation: "【官方規則：Prediction with 'probably'】句子含有 <b>probably</b>，搭配 <b>will</b>。"
+                    },
+                    {
+                        id: "u2_q25",
+                        squareNum: "Square 25",
+                        text: "Perhaps your sister <span class=\"blank-box\" id=\"blank-u2_q25\">______</span> accompany you to the doctor?",
+                        options: ["(A) will", "(B) is going to", "(C) does"],
+                        answer: 0,
+                        explanation: "【官方規則：Prediction with 'perhaps'】帶有 <b>perhaps</b>（或許）的推測或建議，搭配 <b>will</b>。"
+                    }
+                ]
+            }
+        };
+
+        // User Interactive State
+        let userAnswers = {};
+        let currentTab = 'unit1';
+
+        // Initial Load
+        window.onload = function() {
+            renderQuiz('unit1');
+            updateGlobalStats();
+        };
+
+        // Switch Tabs
+        function switchTab(tabKey) {
+            currentTab = tabKey;
+            
+            // Tab Buttons Styling
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-indigo-50', 'text-indigo-700', 'border', 'border-indigo-200', 'shadow-sm');
+                btn.classList.add('text-slate-600');
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabKey}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'bg-indigo-50', 'text-indigo-700', 'border', 'border-indigo-200', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-600');
+            }
+
+            // Banner Title & Description Update
+            const bannerTitle = document.getElementById('unit-banner-title');
+            const bannerDesc = document.getElementById('unit-banner-desc');
+
+            if (tabKey === 'unit1') {
+                bannerTitle.innerText = "Unit 1: Present Simple Tense (現在簡單式)";
+                bannerDesc.innerHTML = grammarData.unit1.description;
+            } else if (tabKey === 'unit2') {
+                bannerTitle.innerText = "Unit 2: Future Forms (Will vs. Be going to)";
+                bannerDesc.innerHTML = grammarData.unit2.description;
+            } else if (tabKey === 'wrong') {
+                bannerTitle.innerText = "錯題專區 (Review Wrong Questions)";
+                bannerDesc.innerHTML = "彙整您作答錯誤或尚未訂正的題目，點擊「對答案」按鈕可重新確認觀念與解析！";
+            } else if (tabKey === 'all') {
+                bannerTitle.innerText = "期中考全真綜合模考 (52 題全載)";
+                bannerDesc.innerHTML = "涵蓋 Unit 1Present Simple 31 題 + Unit 2 Future Forms 21 題，模擬全真文法小考與期中考！";
+            }
+
+            renderQuiz(tabKey);
+        }
+
+        // Render Questions
+        function renderQuiz(tabKey) {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            let questionsToRender = [];
+            if (tabKey === 'all') {
+                questionsToRender = [...grammarData.unit1.questions, ...grammarData.unit2.questions];
+            } else if (tabKey === 'wrong') {
+                const allQs = [...grammarData.unit1.questions, ...grammarData.unit2.questions];
+                questionsToRender = allQs.filter(q => userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.answer);
+                
+                if (questionsToRender.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm">
+                            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">目前沒有錯題！</h3>
+                            <p class="text-sm text-slate-500 max-w-md mx-auto">太棒了！您做過的題目全部正確，或者您尚未開始作答。請切換至 Unit 1 或 Unit 2 進行練習。</p>
+                        </div>
+                    `;
+                    return;
+                }
+            } else {
+                questionsToRender = grammarData[tabKey].questions;
+            }
+
+            questionsToRender.forEach((q, idx) => {
+                const selectedOpt = userAnswers[q.id];
+                const isAnswered = selectedOpt !== undefined;
+                const isCorrect = isAnswered && selectedOpt === q.answer;
+
+                const qCard = document.createElement('div');
+                qCard.className = "bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all hover:shadow-md";
+
+                let html = `
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-indigo-900 text-white font-extrabold text-xs px-3 py-1 rounded-lg shadow-sm">
+                                ${q.squareNum}
+                            </span>
+                            <span class="text-xs font-semibold text-slate-400">Question ${idx + 1}</span>
+                        </div>
+                        ${isAnswered ? (isCorrect ? 
+                            '<span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-circle-check"></i> 正確</span>' : 
+                            '<span class="bg-rose-100 text-rose-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-circle-xmark"></i> 錯誤</span>') : ''}
+                    </div>
+
+                    <!-- Question Sentence -->
+                    <div class="text-lg font-semibold text-slate-900 mb-5 leading-relaxed">
+                        ${q.text}
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                `;
+
+                q.options.forEach((optText, optIdx) => {
+                    const isSelected = selectedOpt === optIdx;
+                    let btnStyle = "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700";
+                    
+                    if (isAnswered) {
+                        if (optIdx === q.answer) {
+                            btnStyle = "bg-emerald-600 border-emerald-600 text-white font-bold shadow-sm";
+                        } else if (isSelected) {
+                            btnStyle = "bg-rose-600 border-rose-600 text-white font-bold shadow-sm";
+                        } else {
+                            btnStyle = "bg-slate-50 border-slate-200 text-slate-400 opacity-60";
+                        }
+                    } else if (isSelected) {
+                        btnStyle = "bg-indigo-600 border-indigo-600 text-white font-semibold shadow-sm";
+                    }
+
+                    html += `
+                        <button onclick="selectOption('${q.id}', ${optIdx})" 
+                                class="border rounded-xl p-3.5 text-left text-sm transition-all flex items-center justify-between ${btnStyle}">
+                            <span>${optText}</span>
+                            ${isAnswered && optIdx === q.answer ? '<i class="fa-solid fa-circle-check text-white"></i>' : ''}
+                            ${isAnswered && isSelected && optIdx !== q.answer ? '<i class="fa-solid fa-circle-xmark text-white"></i>' : ''}
+                        </button>
+                    `;
+                });
+
+                html += `</div>`;
+
+                // Explanation Box (Shown if answered)
+                if (isAnswered) {
+                    html += `
+                        <div class="mt-4 p-4 rounded-xl text-xs leading-relaxed ${isCorrect ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-rose-50 border border-rose-200 text-rose-900'}">
+                            <div class="font-bold flex items-center gap-1.5 mb-1 text-sm ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}">
+                                <i class="fa-solid ${isCorrect ? 'fa-circle-check' : 'fa-lightbulb'}"></i> ${isCorrect ? '觀念正確！' : '解析重點：'}
+                            </div>
+                            ${q.explanation}
+                        </div>
+                    `;
+                }
+
+                qCard.innerHTML = html;
+                container.appendChild(qCard);
+            });
+        }
+
+        // Option Selection Handler
+        function selectOption(questionId, optionIndex) {
+            userAnswers[questionId] = optionIndex;
+            
+            // Update question blank UI text
+            const allQs = [...grammarData.unit1.questions, ...grammarData.unit2.questions];
+            const q = allQs.find(item => item.id === questionId);
+            if (q) {
+                const blankElem = document.getElementById(`blank-${questionId}`);
+                if (blankElem) {
+                    const isCorrect = optionIndex === q.answer;
+                    blankElem.className = `blank-box ${isCorrect ? 'blank-correct' : 'blank-incorrect'}`;
+                    blankElem.innerText = q.options[optionIndex];
+                }
+            }
+
+            renderQuiz(currentTab);
+            updateGlobalStats();
+        }
+
+        // Global Score & Accuracy Counter
+        function updateGlobalStats() {
+            const allQs = [...grammarData.unit1.questions, ...grammarData.unit2.questions];
+            const totalCount = allQs.length;
+            
+            let answeredCount = 0;
+            let correctCount = 0;
+            let wrongCount = 0;
+
+            allQs.forEach(q => {
+                if (userAnswers[q.id] !== undefined) {
+                    answeredCount++;
+                    if (userAnswers[q.id] === q.answer) {
+                        correctCount++;
+                    } else {
+                        wrongCount++;
+                    }
+                }
+            });
+
+            document.getElementById('stat-answered').innerText = `${answeredCount} / ${totalCount}`;
+            const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+            document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
+
+            // Update Wrong Badge Count
+            const wrongBadge = document.getElementById('wrong-count-badge');
+            if (wrongBadge) {
+                wrongBadge.innerText = wrongCount;
+            }
+        }
+
+        // Reset Quiz
+        function resetQuiz() {
+            if (confirm("確定要重置所有文法練習紀錄嗎？")) {
+                userAnswers = {};
+                renderQuiz(currentTab);
+                updateGlobalStats();
+            }
+        }
+    </script>
+</body>
+</html>
